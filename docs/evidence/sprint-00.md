@@ -79,7 +79,7 @@ curl http://localhost:8080/api/orders
 - Integrante 1 (Juan Pablo Heras) — Documentación y apoyo en el Value Stream (as-is.md y to-be.md).
 - Integrante 2 (Victoria Villalba) — Creación de repositorio, documentación de Value Stream (as-is.md) y del Working Agreement.
 - Integrante 3 (Pedro Esquer) — Configuración e integración de Maven Wrapper (mvnw) y actualización de las instrucciones en README.md.
-- Integrante 4 (Pablo Zamora) — Documentación de sprint-00.md y apoyo en la documentación de Value Stream (as-is.md)
+- Integrante 4 (Pablo Zamora) — Documentación de sprint-00.md y apoyo en la documentación de Value Stream (as-is.md) y Working Agreement
 
 ## Mini Definition of Done
 - [X] Repo y commit baseline identificables
@@ -96,5 +96,18 @@ curl http://localhost:8080/api/orders
 ## Uso de IA
 - **Herramienta**: Claude
 - **Prompt relevante**:
-- **Qué verificamos/cambiamos**:
 
+    "AS-IS Sprint 0: repo creado, pero no se pudo ejecutar el proyecto en el laboratorio por falta de Maven; se resolvió con computadoras personales.
+    Redacta el AS-IS y el TO-BE con esta estructura:
+    - Value Stream AS-IS/TO-BE — Sprint [N]
+    - Descripción
+    - Flujo de valor (etapas) — tabla: Etapa | Descripción | Estado/Tiempo
+    - Cuellos de botella (solo AS-IS)
+    - Cambios respecto al AS-IS (solo TO-BE) — tabla: Aspecto | AS-IS | TO-BE
+    - Herramientas a implementar / Beneficios / Riesgos (solo TO-BE)
+
+    En el TO-BE usa mvnw (no Docker, por ser Sprint 0, lo que le estaría agregando complejidad en etapas tempranas) e incluye branching (feature/* + pull requests), justificando por qué conviene desde ahora aunque no esté en el AS-IS, ya que el equipo decidió implementarlo desde ahora para evitar conflictos a futuro."
+
+- **Qué verificamos/cambiamos:**
+  - Verificamos que la tabla comparativa contrastara claramente el cuello de botella del laboratorio (falta de Maven global) contra la solución estandarizada con Maven Wrapper (`mvnw`).
+  - Ajustamos la redacción del TO-BE para enfatizar la adopción temprana de la estrategia de ramas (`feature/*`) y Pull Requests como un acuerdo preventivo del equipo antes de acumular commits en `main`.

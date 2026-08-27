@@ -11,8 +11,10 @@ La funcionalidad de negocio inicial es deliberadamente pequeña porque el propó
 ## Requisitos
 
 - Java 21
-- Maven 3.9+
 - Git
+- Maven Wrapper incluido en el repositorio
+
+El proyecto incluye Maven Wrapper (`mvnw` y `mvnw.cmd`), por lo que no es necesario instalar Maven manualmente. El Wrapper utiliza la versión de Maven configurada por el proyecto.
 
 Más adelante: Docker, AWS CLI, Terraform, Minikube, kubectl y Kompose.
 
@@ -22,58 +24,64 @@ Cada equipo crea en la Sesión 1 su propio repositorio GitHub, por ejemplo `orde
 
 Importen el starter y creen el baseline:
 
-```bash
-git init
-git add .
-git commit -m "chore: import OrderFlow baseline"
-git branch -M main
-git remote add origin <URL>
-git push -u origin main
-```
+    git init
+    git add .
+    git commit -m "chore: import OrderFlow baseline"
+    git branch -M main
+    git remote add origin <URL>
+    git push -u origin main
 
 Otro integrante verifica la reproducibilidad desde un fresh clone:
 
-```bash
-git clone <URL>
-cd <repo>
-git log --oneline -1
-mvn clean test
-mvn package
-```
+En Windows:
 
-Branching formal inicia en Semana 2. Pull Requests, Code Review y quality gates inician en Semana 3.
+    git clone <URL>
+    cd <repo>
+    git log --oneline -1
+    mvnw.cmd clean test
+    mvnw.cmd package
+
+En Linux/macOS:
+
+    git clone <URL>
+    cd <repo>
+    git log --oneline -1
+    ./mvnw clean test
+    ./mvnw package
 
 ## Baseline
 
-```bash
-mvn clean test
-mvn package
-mvn -pl orders-api spring-boot:run
-```
+En Windows:
+
+    mvnw.cmd clean test
+    mvnw.cmd package
+    mvnw.cmd -pl orders-api spring-boot:run
+
+En Linux/macOS:
+
+    ./mvnw clean test
+    ./mvnw package
+    ./mvnw -pl orders-api spring-boot:run
 
 Prueba:
 
-```bash
-curl http://localhost:8080/actuator/health
-Invoke-RestMethod -Uri "http://localhost:8080/api/orders" -Method Post -ContentType "application/json" -Body '{"customerId":"team-demo","total":150.00}'
-curl http://localhost:8080/api/orders
-```
+    curl http://localhost:8080/actuator/health
+    Invoke-RestMethod -Uri "http://localhost:8080/api/orders" -Method Post -ContentType "application/json" -Body '{"customerId":"team-demo","total":150.00}'
+    curl http://localhost:8080/api/orders
 
 ## Evidencia acumulativa
 
 No sobrescriban evidencias anteriores. Cada Sprint conserva su propio archivo:
 
-```text
-docs/evidence/
-├── sprint-00.md
-├── sprint-01.md
-├── sprint-02.md
-├── sprint-03.md
-├── sprint-04.md
-├── sprint-05.md
-├── sprint-06.md
-└── sprint-07.md
-```
+    docs/evidence/
+    ├── sprint-00.md
+    ├── sprint-01.md
+    ├── sprint-02.md
+    ├── sprint-03.md
+    ├── sprint-04.md
+    ├── sprint-05.md
+    ├── sprint-06.md
+    └── sprint-07.md
 
 Usen PR, pipeline, deployment o infraestructura sólo cuando ya correspondan al Sprint. Antes de eso registren: `N/A — todavía no corresponde a este Sprint.`
 

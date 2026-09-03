@@ -40,3 +40,14 @@ siguientes criterios:
   a realizar antes de que se ejecuten, no después.
 - En caso de empate o desacuerdo persistente, se recomienda escalar la
   discusión a una reunión breve para llegar a consenso.
+
+## Nomenclatura y manera de trabajo en el repositorio
+- El proyecto se trabajará con la estrategia de branching GithubFlow.
+- Cada cambio realizado debe estar desarrollado en una rama independiente, basada en main.
+- La nomenclatura para las ramas deberá ser:
+  - `feature` para nuevas funcionalidades.
+  - `docs` para cambios o nuevos archivos de documentación.
+  - `fix` para cambios en funcionalidades existentes.
+  
+- Al finalizar el trabajo, se deberá abrir un PR que otro integrante del equipo debe revisar y hacer el merge.
+- Las ramas que ya no sean necesarias deben de ser eliminadas, para mantener el repositorio ordenado.

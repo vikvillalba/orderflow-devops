@@ -31,6 +31,6 @@ public class OrderService {
 
 
     public synchronized  boolean isValidStatus(String status) {
-        return "ACTIVE" == status;
+        return "ACTIVE".equals(status);
     }
 }

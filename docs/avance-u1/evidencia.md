@@ -18,10 +18,10 @@ El proyecto utilizará GitHub Actions para ejecutar el build, las pruebas, gener
 
 Flujo:
 
-Push hacia main / Pull Request -> GitHub Actions -> Maven + Tests -> JaCoCo -> SonnarScanner -> SonnarQube -> Quality Gate
+Push hacia main / Pull Request -> GitHub Actions -> Maven + Tests -> JaCoCo -> SonarScanner -> SonarQube -> Quality Gate
 
 
-Cómo el equipo decidió trabajar con la versión gratuita de SonarQube se utilizará el Quality Gate que viene incluido por default con el plan gratuito `Sonar Way`.
+Como el equipo decidió trabajar con la versión gratuita de SonarQube se utilizará el Quality Gate que viene incluido por default con el plan gratuito `Sonar Way`.
 
 ## 3. Ejecución base
 
@@ -44,7 +44,6 @@ Código introducido:
 public synchronized boolean isValidStatus(String status) {
     return "ACTIVE" == status;
 }
-return status
 ```
 
 Se esperaba que SonarQube identificara esta comparación como fallo / bug ya que `==` compara referencias de objetos y no el contenido.
@@ -55,6 +54,10 @@ Se esperaba que SonarQube identificara esta comparación como fallo / bug ya que
 - Run de GitHub Actions: https://github.com/vikvillalba/orderflow-devops/actions/runs/34808567352
 - Análisis SonarQube: https://sonarcloud.io/summary/new_code?id=vikvillalba_orderflow-devops&pullRequest=6
 - Quality Gate y workflow GitHub Actions: FAILED
+- Evidencia en Github Actions:
+![Fallo controlado](capturas/Fallo_Controlado_Actions.png)
+- Evidencia en SonarQube Cloud:
+![Fallo controlado](capturas/Fallo_Controlado_Sonar.jpg)
 
 SonarQube mostró el error: 
 
@@ -78,5 +81,63 @@ Con la nueva opción se compara el contenido del String en lugar de su referenci
 - Run de GitHub Actions: https://github.com/vikvillalba/orderflow-devops/actions/runs/34811223573
 - Análisis de SonarQube: https://sonarcloud.io/project/issues?id=vikvillalba_orderflow-devops&pullRequest=6&s=IMPACT_RANK&sinceLeakPeriod=true&issueStatuses=OPEN%2CCONFIRMED
 - QualityGate: Passed
+- Evidencia en Github Actions:
+![Fallo controlado corregido](capturas/Fallo_Controlado_Corregido_Actions.jpg)
+- Evidencia en SonarQube Cloud:
+![Fallo controlado corregido](capturas/Fallo_Controlado_Corregido_Sonar.jpg)
 
 ## 8. Uso de IA
+### Prompts de referencia utilizados en Claude
+- **Estructura del archivo YAML:** 
+    > "Ayúdame a estructurar un workflow de GitHub Actions para un proyecto con Java 21 y Maven Wrapper. Necesito que analice todo el código, enviando las métricas a SonarCloud y evalue las Quality Gates"
+
+    ### Respuesta:
+    ```yaml
+     name: SonarQube
+
+     on:
+       push:
+         branches: [main]
+       pull_request:
+         branches: [main]
+
+     jobs:
+       sonar:
+         runs-on: ubuntu-latest
+
+         steps:
+           - name: Descargar código
+             uses: actions/checkout@v4
+             with:
+               fetch-depth: 0
+
+           - name: Configurar Java 21
+             uses: actions/setup-java@v4
+             with:
+               distribution: temurin
+               java-version: '21'
+               cache: maven
+
+           - name: Dar permisos al Maven Wrapper
+             run: chmod +x mvnw
+
+           - name: Compilar, probar y analizar
+             env:
+               SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+             run: >
+               ./mvnw -B clean verify
+               org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
+               -Dsonar.organization=${{ vars.SONAR_ORGANIZATION_KEY }}
+               -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
+               -Dsonar.qualitygate.wait=true
+     ```
+
+- **Comprensión de parámetros y atributos del YAML:** 
+    > "¿Para qué funciona cada atributo en el archivo `sonar.yml`? Explícame específicamente qué hacen `fetch-depth: 0`, `on: [pull_request]`, y la propiedad `-Dsonar.qualitygate.wait=true`"
+
+  ### Respuesta:
+    > * "**`fetch-depth: 0`:** Configura `actions/checkout` para descargar el historial completo de commits de Git en lugar de un *shallow clone*. Esto es indispensable para que SonarCloud compare el código nuevo (*New Code*) contra la rama `main` y asigne autorías de cambios."
+    > * "**`on: [pull_request, push]`:** Define los eventos disparadores. `pull_request` valida los cambios en ramas secundarias antes del *merge*, mientras que `push` actualiza la métrica base del proyecto en la rama principal."
+    > * "**`-Dsonar.qualitygate.wait=true`:** Es la clave de la sincronización en CI/CD. Pausa la ejecución de Maven en GitHub Actions esperando el veredicto de SonarCloud. Si el Quality Gate arroja **FAILED**, el paso en GitHub Actions falla con una **X roja**, bloqueando el proceso."
+    > * "**`cache: maven`:** Almacena en caché las dependencias `.m2` para acelerar el tiempo de construcción de futuros ejecuciones."
+    > * "**`distribution: temurin`:** Especifica el proveedor de OpenJDK a instalar en la máquina virtual de GitHub. Es una distribución gratuita de alto rendimiento, ideal para compilar y probar aplicaciones Java 21 en entornos CI/CD."

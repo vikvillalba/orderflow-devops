@@ -61,7 +61,22 @@ SonarQube mostró el error:
     Strings and Boxed types should be compared using "equals()"
 
 ## 6. Correción
+El problema se corrigió cambiando:
+
+```java
+"ACTIVE" == status
+```
+
+```java
+"ACTIVE".equals(status)
+```
+
+Con la nueva opción se compara el contenido del String en lugar de su referencia. 
 
 ## 7. Ejecución después de la correción
+- Commit: d6b49df
+- Run de GitHub Actions: https://github.com/vikvillalba/orderflow-devops/actions/runs/34811223573
+- Análisis de SonarQube: https://sonarcloud.io/project/issues?id=vikvillalba_orderflow-devops&pullRequest=6&s=IMPACT_RANK&sinceLeakPeriod=true&issueStatuses=OPEN%2CCONFIRMED
+- QualityGate: Passed
 
 ## 8. Uso de IA

@@ -20,8 +20,6 @@ public class OrderController {
 
     @GetMapping("/{id}")
     public ResponseEntity<Order> get(@PathVariable long id) {
-        String texto = null;
-        int longitud = texto.length();
         return service.find(id).map(ResponseEntity::ok).orElseGet(() -> ResponseEntity.notFound().build());
     }
 

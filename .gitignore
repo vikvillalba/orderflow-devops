@@ -11,3 +11,5 @@ target/
 
 # Logs
 *.log
+
+.DS_Store

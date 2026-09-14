@@ -28,4 +28,9 @@ public class OrderService {
     public synchronized Optional<Order> find(long id) {
         return Optional.ofNullable(orders.get(id));
     }
+
+
+    public synchronized  boolean isValidStatus(String status) {
+        return "ACTIVE".equals(status);
+    }
 }

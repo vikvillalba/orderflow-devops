@@ -3,6 +3,9 @@ package mx.edu.orderflow.orders;
 import static org.junit.jupiter.api.Assertions.*;
 import java.math.BigDecimal;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.NullAndEmptySource;
+import org.junit.jupiter.params.provider.ValueSource;
 
 class OrderServiceTest {
     @Test
@@ -61,5 +64,26 @@ class OrderServiceTest {
     void findReturnsEmptyWhenNotExists() {
         var s = new OrderService();
         assertTrue(s.find(9999L).isEmpty());
+    }
+
+    @ParameterizedTest
+    @ValueSource(strings = {"-100", "-0.01", "0", "0.00"})
+    void rejectsNonPositiveAmount(String total){
+        // Arrange
+        var s = new OrderService();
+
+        //Act y Assert
+        assertThrows(IllegalArgumentException.class, () -> s.create("student-1", new BigDecimal(total)));
+    }
+
+    @ParameterizedTest
+    @NullAndEmptySource
+    @ValueSource(strings = {" ", "  ", "\t", "\n"})
+    void rejectsInvalidCustomerId(String customerId) {
+        //Arrange
+        var s = new OrderService();
+        var monto = new BigDecimal(100);
+        // Act y Assert
+        assertThrows(IllegalArgumentException.class, () -> s.create(customerId, monto));
     }
 }

@@ -93,7 +93,7 @@ class OrderControllerTest {
 
         // Assert
         assertEquals(
-                HttpStatus.OK, //Espera NOT_FOUND
+                HttpStatus.NOT_FOUND,
                 response.getStatusCode()
         );
     }

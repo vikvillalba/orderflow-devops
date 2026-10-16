@@ -1,11 +1,9 @@
+
 package mx.edu.orderflow.orders;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
 
 import java.math.BigDecimal;
-import java.util.List;
-import java.util.Optional;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,86 +16,208 @@ class OrderControllerTest {
 
     @BeforeEach
     void setUp() {
-        service = mock(OrderService.class);
+        service = new OrderService();
         controller = new OrderController(service);
     }
 
-    // --- list() ---
+    // ==========================
+    // Tests for list()
+    // ==========================
 
     @Test
     void listReturnsOrders() {
-        var order = new Order(1001L, "c-1", new BigDecimal("100"), OrderStatus.CREATED);
-        when(service.list()).thenReturn(List.of(order));
+        // Arrange
+        service.create("c-1", new BigDecimal("100"));
 
+        // Act
         var result = controller.list();
 
+        // Assert
         assertEquals(1, result.size());
         assertEquals("c-1", result.get(0).customerId());
     }
 
     @Test
     void listReturnsEmptyWhenNoOrders() {
-        when(service.list()).thenReturn(List.of());
+        // Arrange
+        // El servicio inicia sin ordenes
 
+        // Act
         var result = controller.list();
 
+        // Assert
         assertTrue(result.isEmpty());
     }
 
-    // --- get(id) ---
+    @Test
+    void listReturnsMultipleOrders() {
+        // Arrange
+        service.create("c-1", new BigDecimal("100"));
+        service.create("c-2", new BigDecimal("200"));
+        service.create("c-3", new BigDecimal("300"));
+
+        // Act
+        var result = controller.list();
+
+        // Assert
+        assertEquals(3, result.size());
+    }
+
+    // ==========================
+    // Tests for get(id)
+    // ==========================
 
     @Test
     void getReturnsOkWhenOrderExists() {
-        var order = new Order(1001L, "c-1", new BigDecimal("100"), OrderStatus.CREATED);
-        when(service.find(1001L)).thenReturn(Optional.of(order));
+        // Arrange
+        var order = service.create(
+                "c-1", new BigDecimal("100")
+        );
 
-        var response = controller.get(1001L);
+        // Act
+        var response = controller.get(order.id());
 
+        // Assert
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals(1001L, response.getBody().id());
+        assertNotNull(response.getBody());
+        assertEquals(order.id(), response.getBody().id());
     }
 
     @Test
     void getReturnsNotFoundWhenOrderMissing() {
-        when(service.find(9999L)).thenReturn(Optional.empty());
+        // Arrange
+        long nonexistentId = 9999L;
 
-        var response = controller.get(9999L);
+        // Act
+        var response = controller.get(nonexistentId);
 
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
+        // Assert
+        assertEquals(
+                HttpStatus.NOT_FOUND,
+                response.getStatusCode()
+        );
     }
 
-    // --- create() ---
+    @Test
+    void getReturnsCorrectCustomerId() {
+        // Arrange
+        var order = service.create(
+                "student-42", new BigDecimal("250")
+        );
+
+        // Act
+        var response = controller.get(order.id());
+
+        // Assert
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals(
+                "student-42",
+                response.getBody().customerId()
+        );
+    }
+
+    // ==========================
+    // Tests for create()
+    // ==========================
 
     @Test
     void createReturns201WhenValid() {
-        var req = new CreateOrderRequest("c-1", new BigDecimal("150"));
-        var created = new Order(1001L, "c-1", new BigDecimal("150"), OrderStatus.CREATED);
-        when(service.create("c-1", new BigDecimal("150"))).thenReturn(created);
+        // Arrange
+        var req = new CreateOrderRequest(
+                "c-1", new BigDecimal("150")
+        );
 
+        // Act
         var response = controller.create(req);
 
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertEquals(created, response.getBody());
+        // Assert
+        assertEquals(
+                HttpStatus.CREATED,
+                response.getStatusCode()
+        );
+
+        assertNotNull(response.getBody());
+        assertEquals(
+                "c-1",
+                ((Order) response.getBody()).customerId()
+        );
     }
 
     @Test
-    void createReturns400WhenInvalid() {
-        var req = new CreateOrderRequest("", new BigDecimal("10"));
-        when(service.create(any(), any()))
-            .thenThrow(new IllegalArgumentException("customerId required"));
+    void createReturns400WhenCustomerIdEmpty() {
+        // Arrange
+        var req = new CreateOrderRequest(
+                "", new BigDecimal("100")
+        );
 
+        // Act
         var response = controller.create(req);
 
-        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
-        assertEquals("customerId required", response.getBody());
+        // Assert
+        assertEquals(
+                HttpStatus.BAD_REQUEST,
+                response.getStatusCode()
+        );
+
+        assertEquals(
+                "customerId required",
+                response.getBody()
+        );
     }
 
-    // --- CreateOrderRequest record ---
+    @Test
+    void createReturns400WhenTotalIsNegative() {
+        // Arrange
+        var req = new CreateOrderRequest(
+                "c-1", new BigDecimal("-100")
+        );
+
+        // Act
+        var response = controller.create(req);
+
+        // Assert
+        assertEquals(
+                HttpStatus.BAD_REQUEST,
+                response.getStatusCode()
+        );
+    }
+
+    @Test
+    void createReturns400WhenTotalIsNull() {
+        // Arrange
+        var req = new CreateOrderRequest("c-1", null);
+
+        // Act
+        var response = controller.create(req);
+
+        // Assert
+        assertEquals(
+                HttpStatus.BAD_REQUEST,
+                response.getStatusCode()
+        );
+    }
+
+    // ==========================
+    // Tests for CreateOrderRequest
+    // ==========================
 
     @Test
     void createOrderRequestStoresFields() {
-        var req = new CreateOrderRequest("c-42", new BigDecimal("99.99"));
-        assertEquals("c-42", req.customerId());
-        assertEquals(new BigDecimal("99.99"), req.total());
+        // Arrange
+        var req = new CreateOrderRequest(
+                "c-42", new BigDecimal("99.99")
+        );
+
+        // Act
+        var customerId = req.customerId();
+        var total = req.total();
+
+        // Assert
+        assertEquals("c-42", customerId);
+        assertEquals(
+                new BigDecimal("99.99"),
+                total
+        );
     }
 }

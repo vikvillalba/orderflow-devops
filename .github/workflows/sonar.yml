@@ -33,6 +33,6 @@ jobs:
         run: >
           ./mvnw -B clean verify
           org.sonarsource.scanner.maven:sonar-maven-plugin:sonar
-          -Dsonar.organization=${{ vars.SONAR_ORGANIZATION_KEY }}
+          -Dsonar.host.url=http://18.233.67.102:9000
           -Dsonar.projectKey=${{ vars.SONAR_PROJECT_KEY }}
           -Dsonar.qualitygate.wait=true

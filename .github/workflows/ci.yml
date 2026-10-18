@@ -2,7 +2,7 @@ name: CI
 
 on:
   push:
-    branches: [ main, avance-2-testing ]
+    branches: [ main, avance-2-testing, avance-3-artefactos-docker ]
   pull_request:
     branches: [ main ]
   workflow_dispatch:
@@ -36,3 +36,15 @@ jobs:
           name: surefire-reports
           path: '**/target/surefire-reports/'
           if-no-files-found: warn
+
+      - name: Iniciar sesión en Nexus Docker
+        run: |
+          echo "${{ secrets.NEXUS_PASSWORD }}" | docker login 18.233.67.102:8082 -u "${{ secrets.NEXUS_USER }}" --password-stdin
+
+      - name: Construir imagen Docker con tag SHA
+        run: |
+          docker build -t 18.233.67.102:8082/docker-hosted:${{ github.sha }} .
+
+      - name: Publicar imagen en Nexus
+        run: |
+          docker push 18.233.67.102:8082/docker-hosted:${{ github.sha }}

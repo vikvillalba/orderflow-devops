@@ -37,14 +37,24 @@ jobs:
           path: '**/target/surefire-reports/'
           if-no-files-found: warn
 
+      - name: Configurar registro de Docker como Insecure Registry
+        if: github.event_name != 'pull_request'
+        run: |
+          sudo mkdir -p /etc/docker
+          echo '{"insecure-registries": ["18.233.67.102:8082"]}' | sudo tee /etc/docker/daemon.json
+          sudo service docker restart
+
       - name: Iniciar sesión en Nexus Docker
+        if: github.event_name != 'pull_request'
         run: |
           echo "${{ secrets.NEXUS_PASSWORD }}" | docker login 18.233.67.102:8082 -u "${{ secrets.NEXUS_USER }}" --password-stdin
 
       - name: Construir imagen Docker con tag SHA
+        if: github.event_name != 'pull_request'
         run: |
-          docker build -t 18.233.67.102:8082/docker-hosted:${{ github.sha }} .
+          docker build -t 18.233.67.102:8082/orderflow:${{ github.sha }} .
 
       - name: Publicar imagen en Nexus
+        if: github.event_name != 'pull_request'
         run: |
-          docker push 18.233.67.102:8082/docker-hosted:${{ github.sha }}
+          docker push 18.233.67.102:8082/orderflow:${{ github.sha }}
